@@ -223,10 +223,6 @@ metadata:
 				_ = d.ForceNew("yaml_body")
 			}
 
-			if !d.Get("ignore_api_version").(bool) {
-				_ = d.ForceNew("api_version")
-			}
-
 			if !d.NewValueKnown("yaml_body") {
 				log.Printf("[TRACE] yaml_body value interpolated, skipping customized diff")
 				d.SetNewComputed("yaml_body_parsed")
@@ -358,7 +354,6 @@ var (
 		"api_version": {
 			Type:     schema.TypeString,
 			Computed: true,
-			ForceNew: true,
 		},
 		"kind": {
 			Type:     schema.TypeString,
@@ -425,12 +420,6 @@ var (
 			Elem:        &schema.Schema{Type: schema.TypeString},
 			Description: "List of yaml keys to ignore changes to. Set these for fields set by Operators or other processes in kubernetes and as such you don't want to update.",
 			Optional:    true,
-		},
-		"ignore_api_version": {
-			Type:        schema.TypeBool,
-			Description: "Whether APIVersion changes in the object should be ignored. Set to avoid updates when Object versions have changed on the server side.",
-			Optional:    true,
-			Default:     false,
 		},
 		"wait": {
 			Type:        schema.TypeBool,
@@ -638,6 +627,7 @@ func resourceKubectlManifestReadUsingClient(ctx context.Context, d *schema.Resou
 
 func resourceKubectlManifestDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	if d.Get("apply_only").(bool) {
+		log.Printf("[INFO] apply only is true, skipping")
 		return nil
 	}
 	yamlBody := d.Get("yaml_body").(string)
